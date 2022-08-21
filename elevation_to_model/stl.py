@@ -3,9 +3,9 @@ import struct
 ORIGIN = b'\x00' * 12
 
 
-class Stl():
-    def __init__(self, outfile_name, max_value):
-        self.outfile = open(outfile_name, 'wb')
+class Stl:
+    def __init__(self, outfile_name):
+        self.outfile = open(outfile_name, 'wb+')
 
     def write_header(self, total_triangles=4):
         self.outfile.write(b'\x00' * 80)

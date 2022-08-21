@@ -1,9 +1,9 @@
 from stl import Stl
 import tifffile as tiff
 import numpy as np
+from pathlib import Path
 
 
-input = tiff.imread('N:\\usgs-data\\elevation\\CA_YosemiteNP_2019_D19\\USGS_1M_11_x27y418_CA_YosemiteNP_2019_D19.tif')
 
 '''
     nw -- ne
@@ -16,30 +16,36 @@ def total_triangles(x_width, y_width):
     return 6 * x_width * y_width + 4 * x_width + 4 * y_width
 
 
-width = 10
+
+width = 1
+
+input_filepath = "H:\\usgs-data\\elevation\\AZ_USFS_3DEP_Processing_2019_D20\\USGS_1M_12_x62y378_AZ_USFS_3DEP_Processing_2019_D20.tif"
+input_file_contents = tiff.imread(input_filepath)
+filename = input_filepath.split('\\')[-1]
+filename = filename.split('.')[0]
+stl = Stl(f"N:\\3d\\models\\generated\\yosemite\\{width}M-{filename}.stl")
 
 
-stl = Stl('outfile.stl', width)
+input_filepath = "C:\\Users\\Eracoy\\Downloads\\swissalti3d_2019_2617-1091_2_2056_5728.tif"
+input_file_contents = tiff.imread(input_filepath)
+Path(f"N:\\3d\\models\\generated\\matterhorn").mkdir(parents=True, exist_ok=True)
+stl = Stl(f"N:\\3d\\models\\generated\\matterhorn\\{width}M-matterhorn.stl")
 
-h = [[1,2,3], [4,9,2], [3,5,10]]
-nx, ny = 3, 3
 
-h = np.array(input)
-h = h[0:1000, 0:1000]
-h -= np.min(h) - 1
-h *= 100
+h = np.array(input_file_contents)
+resolution = 1
+# h = h[:2000:resolution, 8000::resolution]
+h -= 0
+h *= width / resolution
 nx, ny = h.shape
 stl.write_header(total_triangles(nx, ny))
 print(f"Writing {total_triangles(nx, ny)} triangles for {nx}x{ny} grid")
 
 
-# stl.emit((1, 1, 1), (2, 3, 4), (5, 6, 7))
-
-
-
 for x in range(nx - 1):
+    print(f"Processing row {x+1}/{nx}")
     for y in range(ny - 1):
-        if h[x][y] < 0:
+        if h[x][y] < 0 or h[x+1][y] < 0 or h[x][y+1] < 0 or h[x+1][y+1] < 0:
             continue
 
         nw = (x * width, y * width, h[x][y])
